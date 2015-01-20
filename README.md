@@ -1,6 +1,13 @@
 # utils
 utils
 
+Structure
+src
+-main
+--java
+--webapp
+---WEB-INF\web.xml
+
 # begin
 package utils;
 
