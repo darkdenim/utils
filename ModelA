@@ -1,4 +1,4 @@
-package test;
+package genesistech.reporting;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,28 +30,64 @@ public class ModelA {
     private double baseMargin;
     private Date shipDate;
 
-    public long getRowId() {
-        return rowId;
+    public ModelA(List<Object> row) throws ParseException {
+        System.out.println("Row: " + row.toString());
+        this.rowId = ((Double)row.get(Headings.RowID.ordinal())).longValue();
+        this.orderId = ((Double)row.get(Headings.OrderID.ordinal())).longValue();
+        this.orderDate = toDate(row.get(Headings.OrderDate.ordinal()));
+        this.priority = Priority.getPriority(row.get(Headings.OrderPriority.ordinal()).toString());
+        this.quantity = ((Double)row.get(Headings.OrderQuantity.ordinal())).intValue();
+        this.sales = toDouble(row.get(Headings.Sales.ordinal()));
+        this.discount = toDouble(row.get(Headings.SalesDiscount.ordinal()));
+        this.shipMode = ShipMode.getShipMode(row.get(Headings.ShipMode.ordinal()).toString());
+        this.profit = toDouble(row.get(Headings.Profit.ordinal()));
+        this.unitPrice = toDouble(row.get(Headings.UnitPrice.ordinal()));
+        this.shipping = toDouble(row.get(Headings.ShippingCost.ordinal()));
+        this.customer = row.get(Headings.CustomerName.ordinal()).toString();
+        this.province = row.get(Headings.Province.ordinal()).toString();
+        this.region = row.get(Headings.Region.ordinal()).toString();
+        this.segment = Segment.getSegment(row.get(Headings.CustomerSegment.ordinal()).toString());
+        this.productCategory = row.get(Headings.ProductCategory.ordinal()).toString();
+        this.productSubCategory = row.get(Headings.ProductSubCategory.ordinal()).toString();
+        this.productName = row.get(Headings.ProductName.ordinal()).toString();
+        this.productContainer = row.get(Headings.ProductContainer.ordinal()).toString();
+        this.baseMargin = toDouble(row.get(Headings.ProductBaseMargin.ordinal()));
+
+//        String formula = row.get(Headings.ShipDate.ordinal()).toString();
+//        int x = Integer.parseInt(formula.substring(2));
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.setTime(this.orderDate);
+//        if (formula.startsWith("+")) {
+//            calendar.add(Calendar.DAY_OF_MONTH, x);
+//        } else {
+//            calendar.add(Calendar.DAY_OF_MONTH, x*-1);
+//        }
+//        this.shipDate = calendar.getTime();
+        this.shipDate = new Date();
     }
 
-    public void setRowId(long rowId) {
-        this.rowId = rowId;
+    public long getRowId() {
+        return rowId;
     }
 
     public void setRowId(List<String> row) {
         this.rowId = Long.parseLong(row.get(Headings.RowID.ordinal()));
     }
 
+    public void setRowId(long rowId) {
+        this.rowId = rowId;
+    }
+
     public long getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(long orderId) {
-        this.orderId = orderId;
-    }
-
     public void setOrderId(List<String> row) {
         this.orderId = Long.parseLong(row.get(Headings.OrderID.ordinal()));
+    }
+
+    public void setOrderId(long orderId) {
+        this.orderId = orderId;
     }
 
     public Date getOrderDate() {
@@ -206,6 +242,63 @@ public class ModelA {
         this.shipDate = shipDate;
     }
 
+    private Double toDouble(Object obj) {
+            if (obj == null || obj.toString().isEmpty()) {
+                return 0d;
+            }
+        return Double.parseDouble(obj.toString());
+    }
+
+    private Date toDate(Object obj) throws ParseException {
+        String cellValue = obj.toString();
+        cellValue = cellValue.replace("DATE(", "").replace(")", ",");
+        String[] tokens = cellValue.split(",");
+        if (tokens.length < 4) {
+            return new Date();
+        }
+        String date = tokens[0] + "/" + tokens[1] + "/" + tokens[2];
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        Date dt = sdf.parse(date);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(dt);
+
+        String days = tokens[3];
+        if (days.startsWith("-")) {
+            calendar.add(Calendar.DAY_OF_MONTH, Integer.parseInt(days.substring(1)) * -1);
+        } else {
+            calendar.add(Calendar.DAY_OF_MONTH, Integer.parseInt(days.substring(1)));
+        }
+
+        return calendar.getTime();
+    }
+
+    @Override
+    public String toString() {
+        return "ModelA{" +
+                "rowId=" + rowId +
+                ", orderId=" + orderId +
+                ", orderDate=" + orderDate +
+                ", priority=" + priority +
+                ", quantity=" + quantity +
+                ", sales=" + sales +
+                ", discount=" + discount +
+                ", shipMode=" + shipMode +
+                ", profit=" + profit +
+                ", unitPrice=" + unitPrice +
+                ", shipping=" + shipping +
+                ", customer='" + customer + '\'' +
+                ", province='" + province + '\'' +
+                ", region='" + region + '\'' +
+                ", segment=" + segment +
+                ", productCategory='" + productCategory + '\'' +
+                ", productSubCategory='" + productSubCategory + '\'' +
+                ", productName='" + productName + '\'' +
+                ", productContainer='" + productContainer + '\'' +
+                ", baseMargin=" + baseMargin +
+                ", shipDate=" + shipDate +
+                '}';
+    }
+
     public enum Priority {
         Low, Medium, High, Critical;
 
@@ -227,7 +320,7 @@ public class ModelA {
         ProductSubCategory("Product Sub-Category"), ProductName("Product Name"),
         ProductContainer("Product Container"), ProductBaseMargin("Product Base Margin"), ShipDate("Ship Date");
 
-        String caption;
+        public String caption;
 
         Headings(String caption) {
             this.caption = caption;
@@ -279,93 +372,5 @@ public class ModelA {
             }
             return null;
         }
-    }
-
-    public ModelA(List<Object> row) throws ParseException {
-        this.rowId = ((Double)row.get(Headings.RowID.ordinal())).longValue();
-        this.orderId = ((Double)row.get(Headings.OrderID.ordinal())).longValue();
-        this.orderDate = toDate(row.get(Headings.OrderDate.ordinal()));
-        this.priority = Priority.getPriority(row.get(Headings.OrderPriority.ordinal()).toString());
-        this.quantity = ((Double)row.get(Headings.OrderQuantity.ordinal())).intValue();
-        this.sales = (double)row.get(Headings.Sales.ordinal());
-        try {
-            this.discount = (double) row.get(Headings.SalesDiscount.ordinal());
-        } catch (ClassCastException e) {
-            this.discount = 0;
-        }
-        this.shipMode = ShipMode.getShipMode(row.get(Headings.ShipMode.ordinal()).toString());
-        this.profit = (double)row.get(Headings.Profit.ordinal());
-        this.unitPrice = (double)row.get(Headings.UnitPrice.ordinal());
-        this.shipping = (double)row.get(Headings.ShippingCost.ordinal());
-        this.customer = row.get(Headings.CustomerName.ordinal()).toString();
-        this.province = row.get(Headings.Province.ordinal()).toString();
-        this.region = row.get(Headings.Region.ordinal()).toString();
-        this.segment = Segment.getSegment(row.get(Headings.CustomerSegment.ordinal()).toString());
-        this.productCategory = row.get(Headings.ProductCategory.ordinal()).toString();
-        this.productSubCategory = row.get(Headings.ProductSubCategory.ordinal()).toString();
-        this.productName = row.get(Headings.ProductName.ordinal()).toString();
-        this.productContainer = row.get(Headings.ProductContainer.ordinal()).toString();
-        this.baseMargin = (double)row.get(Headings.ProductBaseMargin.ordinal());
-
-        String formula = row.get(Headings.ShipDate.ordinal()).toString();
-        int x = Integer.parseInt(formula.substring(2));
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(this.orderDate);
-        if (formula.startsWith("+")) {
-            calendar.add(Calendar.DAY_OF_MONTH, x);
-        } else {
-            calendar.add(Calendar.DAY_OF_MONTH, x*-1);
-        }
-        this.shipDate = calendar.getTime();
-    }
-
-    private Date toDate(Object obj) throws ParseException {
-        String cellValue = obj.toString();
-        cellValue = cellValue.replace("DATE(", "").replace(")", ",");
-        String[] tokens = cellValue.split(",");
-        if (tokens.length < 4) {
-            return new Date();
-        }
-        String date = tokens[0] + "/" + tokens[1] + "/" + tokens[2];
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        Date dt = sdf.parse(date);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(dt);
-
-        String days = tokens[3];
-        if (days.startsWith("-")) {
-            calendar.add(Calendar.DAY_OF_MONTH, Integer.parseInt(days.substring(1)) * -1);
-        } else {
-            calendar.add(Calendar.DAY_OF_MONTH, Integer.parseInt(days.substring(1)));
-        }
-
-        return calendar.getTime();
-    }
-
-    @Override
-    public String toString() {
-        return "ModelA{" +
-                "rowId=" + rowId +
-                ", orderId=" + orderId +
-                ", orderDate=" + orderDate +
-                ", priority=" + priority +
-                ", quantity=" + quantity +
-                ", sales=" + sales +
-                ", discount=" + discount +
-                ", shipMode=" + shipMode +
-                ", profit=" + profit +
-                ", unitPrice=" + unitPrice +
-                ", shipping=" + shipping +
-                ", customer='" + customer + '\'' +
-                ", province='" + province + '\'' +
-                ", region='" + region + '\'' +
-                ", segment=" + segment +
-                ", productCategory='" + productCategory + '\'' +
-                ", productSubCategory='" + productSubCategory + '\'' +
-                ", productName='" + productName + '\'' +
-                ", productContainer='" + productContainer + '\'' +
-                ", baseMargin=" + baseMargin +
-                ", shipDate=" + shipDate +
-                '}';
     }
 }
