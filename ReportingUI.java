@@ -1,5 +1,6 @@
-package genesistech.ui;
+package com.smallbizconsult.ui;
 
+import com.smallbizconsult.model.ModelA;
 import com.vaadin.annotations.Widgetset;
 import com.vaadin.data.Item;
 import com.vaadin.server.VaadinRequest;
@@ -7,7 +8,6 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
-import genesistech.reporting.ModelA;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -33,8 +33,9 @@ import java.util.Iterator;
 import java.util.List;
 
 @VaadinUI
-@Widgetset("MyWidgetSet")
 public class ReportingUI extends UI {
+
+    public static final String fileLocation = "F:\\Downloads\\Sample - Superstore Sales (Excel).xls";
 
     @Override
     protected void init(VaadinRequest vaadinRequest) {
@@ -44,7 +45,7 @@ public class ReportingUI extends UI {
         table.addContainerProperty(ModelA.Headings.OrderDate.caption, Date.class, null);
         table.addContainerProperty(ModelA.Headings.OrderQuantity.caption, Integer.class, null);
         table.addContainerProperty(ModelA.Headings.CustomerName.caption, String.class, null);
-
+        
         for (ModelA model : buildModel()) {
             Object itemId = table.addItem();
             Item item = table.getItem(itemId);
@@ -96,7 +97,7 @@ public class ReportingUI extends UI {
         List<ModelA> models = new ArrayList<ModelA>();
         try {
 
-            FileInputStream file = new FileInputStream(new File("C:\\Users\\Administrator\\Downloads\\temp\\Sample - Superstore Sales (Excel).xls"));
+            FileInputStream file = new FileInputStream(new File(fileLocation));
 
             //Get the workbook instance for XLS file
             HSSFWorkbook workbook = new HSSFWorkbook(file);
